@@ -5,6 +5,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Root Route Handler to load index.html automatically
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // In-Memory Database Simulation
 let pickupRequests = [
   { id: 101, citizenName: "Aarav Sharma", phone: "9876543210", address: "H-42, Connaught Place, New Delhi", wasteType: "Paper & Cardboard", status: "Pending Pickup", collectorAssigned: null },
