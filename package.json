@@ -1,0 +1,12 @@
+{
+  "name": "urbanatmo-platform",
+  "version": "2.0.0",
+  "description": "Multi-page Delhi NCR Environmental & Sanitation Platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

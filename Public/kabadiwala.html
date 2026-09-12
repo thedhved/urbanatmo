@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kabadiwala Portal - UrbanAtmo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <header class="bg-green-800 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Kabadiwala Field Collector App</h1>
+            <nav class="space-x-4 text-sm font-medium">
+                <a href="index.html" class="hover:underline">Home</a>
+                <a href="kabadiwala.html" class="underline">Kabadiwala Portal</a>
+                <a href="school.html" class="hover:underline">School Portal</a>
+                <a href="admin.html" class="hover:underline">Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container mx-auto px-6 py-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-green-800">Live Scrap Pickup Feed</h2>
+                    <p class="text-xs text-gray-500">Accept bookings to access citizen location coordinates and contact numbers.</p>
+                </div>
+                <input type="text" id="collectorNameInput" placeholder="Collector ID / Name" class="border p-2 rounded text-sm w-64" value="Ramesh Kumar (KB-DL-88)">
+            </div>
+            <div id="jobsList" class="space-y-4"></div>
+        </div>
+    </main>
+    <script>
+        async function loadKabadiwalaJobs() {
+            const res = await fetch('/api/kabadiwala/available-jobs');
+            const jobs = await res.json();
+            const container = document.getElementById('jobsList');
+            container.innerHTML = jobs.map(j => `
+                <div class="p-4 border rounded-lg bg-gray-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <span class="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded font-bold">${j.wasteType}</span>
+                        <h4 class="font-bold text-gray-800 mt-1">${j.citizenName} (${j.phone})</h4>
+                        <p class="text-sm text-gray-600">📍 Citizen Location / Address: <strong>${j.address}</strong></p>
+                        <p class="text-xs text-blue-600 mt-1">Status: ${j.status} ${j.collectorAssigned ? `| Assigned: ${j.collectorAssigned}` : ''}</p>
+                    </div>
+                    ${!j.collectorAssigned ? `<button onclick="acceptJob(${j.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700">Accept & View Location</button>` : '<span class="text-xs text-gray-500 font-semibold bg-gray-200 px-3 py-1 rounded">Assigned</span>'}
+                </div>
+            `).join('');
+        }
+        async function acceptJob(jobId) {
+            const collectorName = document.getElementById('collectorNameInput').value;
+            const res = await fetch('/api/kabadiwala/accept-job', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobId, collectorName })
+            });
+            const data = await res.json();
+            alert(data.message);
+            loadKabadiwalaJobs();
+        }
+        loadKabadiwalaJobs();
+    </script>
+</body>
+</html>

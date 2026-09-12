@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Attendance & Student Portal - UrbanAtmo</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <header class="bg-green-800 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Institution & Student Tracking Portal</h1>
+            <nav class="space-x-4 text-sm font-medium">
+                <a href="index.html" class="hover:underline">Home</a>
+                <a href="kabadiwala.html" class="hover:underline">Kabadiwala Portal</a>
+                <a href="school.html" class="underline">School Portal</a>
+                <a href="admin.html" class="hover:underline">Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container mx-auto px-6 py-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h2 class="text-lg font-bold text-green-800">School Dashboard & Presence Tracker</h2>
+                <select id="schoolSelect" onchange="loadSchoolData()" class="border p-2 rounded text-sm">
+                    <option value="SCH-001">Delhi Public School, RK Puram</option>
+                    <option value="SCH-002">Modern School, Barakhamba Road</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-xs text-blue-600 font-bold uppercase">Total Enrolled</p>
+                    <p id="schTotal" class="text-2xl font-bold text-blue-900 mt-1">-</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <p class="text-xs text-green-600 font-bold uppercase">Active Today on Platform</p>
+                    <p id="schActive" class="text-2xl font-bold text-green-900 mt-1">-</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <p class="text-xs text-purple-600 font-bold uppercase">Air Quality Advisory</p>
+                    <p class="text-xs font-semibold text-purple-900 mt-2">Outdoor sports restricted due to high AQI.</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border">
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Register Student onto Platform</h3>
+                <form onsubmit="registerStudent(event)" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input type="text" id="sStudentName" placeholder="Student Full Name" class="border p-2 rounded text-sm" required>
+                    <input type="text" id="sGrade" placeholder="Class / Grade (e.g. 11th A)" class="border p-2 rounded text-sm" required>
+                    <button type="submit" class="bg-blue-600 text-white p-2 rounded text-sm font-medium hover:bg-blue-700">Register Student</button>
+                </form>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-gray-700 mb-2">Registered Student Records</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-100 border-b">
+                                <th class="p-3">Student ID</th>
+                                <th class="p-3">Name</th>
+                                <th class="p-3">Grade</th>
+                                <th class="p-3">Platform Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        async function loadSchoolData() {
+            const schoolId = document.getElementById('schoolSelect').value;
+            const res = await fetch(`/api/school/dashboard/${schoolId}`);
+            const data = await res.json();
+            document.getElementById('schTotal').innerText = data.school.totalStudents;
+            document.getElementById('schActive').innerText = data.school.activeToday;
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = data.students.map(s => `
+                <tr class="border-b">
+                    <td class="p-3 font-mono text-xs">${s.studentId}</td>
+                    <td class="p-3 font-medium">${s.name}</td>
+                    <td class="p-3">${s.grade}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs bg-green-100 text-green-800 font-bold">${s.attendanceStatus}</span></td>
+                </tr>
+            `).join('');
+        }
+        async function registerStudent(e) {
+            e.preventDefault();
+            const schoolId = document.getElementById('schoolSelect').value;
+            const payload = {
+                schoolId,
+                name: document.getElementById('sStudentName',).value,
+                grade: document.getElementById('sGrade').value
+            };
+            const res = await fetch('/api/school/register-student', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success) {
+                alert(data.message);
+                document.getElementById('sStudentName').value = '';
+                document.getElementById('sGrade').value = '';
+                loadSchoolData();
+            }
+        }
+        loadSchoolData();
+    </script>
+</body>
+</html>

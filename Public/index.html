@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanAtmo Hub - Delhi NCR</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <header class="bg-green-800 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold">UrbanAtmo Hub (Delhi NCR)</h1>
+            <nav class="space-x-4 text-sm font-medium">
+                <a href="index.html" class="underline">Home</a>
+                <a href="kabadiwala.html" class="hover:underline">Kabadiwala Portal</a>
+                <a href="school.html" class="hover:underline">School Portal</a>
+                <a href="admin.html" class="hover:underline">Admin Panel</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container mx-auto px-6 py-8 space-y-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h2 class="text-lg font-bold text-green-800 mb-2">Air Pollution & Weather Coupled Forecast</h2>
+            <div class="p-4 bg-red-50 border border-red-200 rounded-lg flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-red-600 font-bold uppercase">Current Air Quality Index (AQI)</p>
+                    <p class="text-3xl font-black text-red-700">342 (Severe)</p>
+                    <p class="text-xs text-gray-600 mt-1">PM2.5: 185 µg/m³ | Stagnant wind conditions in NCR</p>
+                </div>
+                <span class="bg-red-200 text-red-800 text-xs px-3 py-1 rounded-full font-bold">Alert</span>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border">
+            <h2 class="text-lg font-bold text-green-800 mb-4">Kabadiwala Connect – Schedule Scrap Pickup</h2>
+            <form id="citizenPickupForm" onsubmit="bookScrapPickup(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="cName" placeholder="Your Full Name" class="border p-3 rounded-lg" required>
+                <input type="text" id="cPhone" placeholder="Phone Number" class="border p-3 rounded-lg" required>
+                <input type="text" id="cAddress" placeholder="Exact Location / Address in Delhi NCR" class="border p-3 rounded-lg md:col-span-2" required>
+                <select id="cWasteType" class="border p-3 rounded-lg md:col-span-2">
+                    <option value="Paper & Newspapers">Paper & Newspapers</option>
+                    <option value="Plastic Bottles & Containers">Plastic Bottles & Containers</option>
+                    <option value="Cardboard Boxes">Cardboard Boxes</option>
+                    <option value="Old Electronics / E-Waste">Old Electronics / E-Waste</option>
+                </select>
+                <button type="submit" class="bg-green-600 text-white p-3 rounded-lg font-medium hover:bg-green-700 md:col-span-2">Broadcast Pickup Request to Nearby Collectors</button>
+            </form>
+            <div id="bookingResult" class="mt-4 p-3 bg-green-50 text-green-800 rounded-lg hidden font-medium text-sm"></div>
+        </div>
+    </main>
+    <script>
+        async function bookScrapPickup(e) {
+            e.preventDefault();
+            const payload = {
+                citizenName: document.getElementById('cName').value,
+                phone: document.getElementById('cPhone').value,
+                address: document.getElementById('cAddress').value,
+                wasteType: document.getElementById('cWasteType').value
+            };
+            const res = await fetch('/api/citizen/request-pickup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.success) {
+                const box = document.getElementById('bookingResult');
+                box.classList.remove('hidden');
+                box.innerText = data.message;
+                document.getElementById('citizenPickupForm').reset();
+            }
+        }
+    </script>
+</body>
+</html>
